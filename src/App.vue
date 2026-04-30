@@ -3,6 +3,12 @@ import { ref, onMounted } from 'vue'
 import ReloadPrompt from './components/ReloadPrompt.vue'
 
 const isDarkTheme = ref(false)
+const showWelcome = ref(false)
+
+const closeWelcome = () => {
+  showWelcome.value = false
+  localStorage.setItem('myr-welcome-seen', 'true')
+}
 
 const toggleTheme = () => {
   isDarkTheme.value = !isDarkTheme.value
@@ -20,6 +26,11 @@ onMounted(() => {
   if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     isDarkTheme.value = true
     document.documentElement.classList.add('dark-theme')
+  }
+
+  // Comprobar si es la primera vez que se abre la app
+  if (!localStorage.getItem('myr-welcome-seen')) {
+    showWelcome.value = true
   }
 })
 </script>
@@ -67,6 +78,26 @@ onMounted(() => {
     
     <!-- PWA Update Prompt -->
     <ReloadPrompt />
+
+    <!-- Modal de Bienvenida (Solo la primera vez) -->
+    <div v-if="showWelcome" class="modal-overlay" @click.self="closeWelcome">
+      <div class="modal-content fade-in">
+        <div class="modal-header">
+          <h2>Mensaje de tu hijo</h2>
+          <button class="btn-icon" @click="closeWelcome">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: 1.1rem; line-height: 1.6; text-align: center; padding: 1rem 0;">
+            "Hola Pa, perdon por no haberlo hecho antes, ahora que ya se como funciona mas todo este mundito ya he podido hacer esto mucho mas facil de lo que pensaba, ya te hare el tour"
+          </p>
+        </div>
+        <div class="modal-footer" style="justify-content: center;">
+          <button class="btn btn-primary btn-lg" @click="closeWelcome">Empezar a facturar</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -200,5 +231,47 @@ onMounted(() => {
 .page-leave-to {
   opacity: 0;
   transform: translateY(-8px);
+}
+
+/* ---- Modal Estilos (Bienvenida) ---- */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+
+.modal-content {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 { margin: 0; font-size: 1.25rem; color: var(--color-accent); }
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1.25rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
 }
 </style>
